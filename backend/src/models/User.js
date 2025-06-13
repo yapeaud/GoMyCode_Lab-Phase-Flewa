@@ -32,7 +32,7 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    friends: [
+    djavoues: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

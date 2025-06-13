@@ -9,7 +9,7 @@ export const getRecommendedUsers = async (req, res) => {
         const recommendedUsers = await User.find({
             $and: [
                 { _id: { $ne: currentUserId } }, //exclure l'utilisateur actuel
-                { _id: { $nin: currentUser.friends } }, // exclure les amis de l'utilisateur actuel
+                { _id: { $nin: currentUser.djavoues } }, // exclure les amis de l'utilisateur actuel
                 { isOnboarded: true },
             ],
         });
@@ -20,20 +20,20 @@ export const getRecommendedUsers = async (req, res) => {
     }
 };
 
-export const getMyFriends = async (req, res) => {
+export const getMyDjavoues = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
-            .select("friends")
-            .populate("friends", "fullName profilePicture");
+            .select("djavoues")
+            .populate("djavoues", "fullName profilePicture");
 
-        res.status(200).json(user.friends);
+        res.status(200).json(user.djavoues);
     } catch (error) {
-        console.error("Erreur dans le contrôle getMyFriends ", error.message);
+        console.error("Erreur dans le contrôle getMyDjavoues ", error.message);
         res.status(500).json({ message: "Erreur de serveur interne" });
     }
 };
 
-export const sendFriendRequest = async (req, res) => {
+export const sendDjavoueRequest = async (req, res) => {
     try {
         const myId = req.user.id;
         const { id: recipientId } = req.params;
@@ -49,7 +49,7 @@ export const sendFriendRequest = async (req, res) => {
         }
 
         // vérifier si l'utilisateur est déjà ami
-        if (recipient.friends.includes(myId)) {
+        if (recipient.djavoues.includes(myId)) {
             return res.status(400).json({ message: "Vous êtes déjà ami avec cet utilisateur" });
         }
 
@@ -74,12 +74,12 @@ export const sendFriendRequest = async (req, res) => {
 
         res.status(201).json(friendRequest);
     } catch (error) {
-        console.error("Erreur dans le contrôleur sendFriendRequest", error.message);
+        console.error("Erreur dans le contrôleur sendDjavoueRequest", error.message);
         res.status(500).json({ message: "Erreur de serveur interne" });
     }
 };
 
-export const acceptFriendRequest = async (req, res) => {
+export const acceptDjavoueRequest = async (req, res) => {
     try {
         const { id: requestId } = req.params;
 
@@ -100,11 +100,11 @@ export const acceptFriendRequest = async (req, res) => {
         // ajouter chaque utilisateur au tableau d'amis de l'autre
         // $addToSet : ajoute des éléments à un tableau uniquement s'ils n'existent pas déjà.
         await User.findByIdAndUpdate(friendRequest.sender, {
-            $addToSet: { friends: friendRequest.recipient },
+            $addToSet: { djavoues: friendRequest.recipient },
         });
 
         await User.findByIdAndUpdate(friendRequest.recipient, {
-            $addToSet: { friends: friendRequest.sender },
+            $addToSet: { djavoues: friendRequest.sender },
         });
 
         res.status(200).json({ message: "Demande d'amitié acceptée" });
@@ -114,7 +114,7 @@ export const acceptFriendRequest = async (req, res) => {
     }
 };
 
-export const getFriendRequests = async (req, res) => {
+export const getDjavoueRequests = async (req, res) => {
     try {
         const incomingReqs = await FriendRequest.find({
             recipient: req.user.id,
@@ -128,12 +128,12 @@ export const getFriendRequests = async (req, res) => {
 
         res.status(200).json({ incomingReqs, acceptedReqs });
     } catch (error) {
-        console.log("Erreur dans le contrôleur getPendingFriendRequests", error.message);
+        console.log("Erreur dans le contrôleur getDjavoueRequests", error.message);
         res.status(500).json({ message: "Erreur de serveur interne" });
     }
 };
 
-export const getOutgoingFriendReqs = async (req, res) => {
+export const getOutgoingDjavoueReqs = async (req, res) => {
     try {
         const outgoingRequests = await FriendRequest.find({
             sender: req.user.id,
@@ -142,7 +142,7 @@ export const getOutgoingFriendReqs = async (req, res) => {
 
         res.status(200).json(outgoingRequests);
     } catch (error) {
-        console.log("Erreur dans le contrôleur getOutgoingFriendReqs", error.message);
+        console.log("Erreur dans le contrôleur getOutgoingDjavoueReqs", error.message);
         res.status(500).json({ message: "Erreur de serveur interne" });
     }
 };
